@@ -1,0 +1,142 @@
+<!-- Training script + Parsing script-->
+<script src="https://wagenaartje.github.io/neataptic/cdn/1.2.34/neataptic.js"></script>
+<script src="./javascripts/papaparse.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="./javascripts/main.js"></script>
+
+
+
+<style>
+  .entry:not(:first-of-type) {
+    margin-top: 10px;
+  }
+
+  .glyphicon {
+    font-size: 12px;
+  }
+</style>
+
+<!-- Page Content -->
+<div class="container">
+  <div class="row">
+    <div class="col-lg-4">
+      <h1 class="my-4">Wskaźniki:</h1>
+      <div class="form-group multiple-form-group input-group">
+        <div class="input-group-btn input-group-select">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span class="concept">DI</span>
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li>
+              <a href="##DI">DI</a>
+            </li>
+            <li>
+              <a href="#RSI">RSI</a>
+            </li>
+            <li>
+              <a href="#CCI">CCI</a>
+            </li>
+          </ul>
+          <input type="hidden" class="input-group-select-val" name="indicator">
+        </div>
+        <input type="text" name="indValue" class="form-control">
+        <span class="input-group-btn">
+          <button type="button" class="btn btn-success btn-add">+</button>
+        </span>
+      </div>
+      <div class="form-group">
+        <center><button type="button" class="btn btn-info" onclick="sendInds()">START</button></center>
+      </div>
+    </div>
+    <!-- /.col-lg-3 -->
+    <div class="col-lg-8">
+      <div class="card mt-4">
+        <div id="myDiv"></div>
+      </div>
+    </div>
+    <!-- /.col-lg-9 -->
+  </div>
+</div>
+<!-- /.container -->
+
+
+<!-- Adding new indicator script-->
+<script>
+  (function ($) {
+    $(function () {
+
+      var addFormGroup = function (event) {
+        event.preventDefault();
+
+        var $formGroup = $(this).closest('.form-group');
+        var $multipleFormGroup = $formGroup.closest('.multiple-form-group');
+        var $formGroupClone = $formGroup.clone();
+
+        $(this)
+          .toggleClass('btn-success btn-add btn-danger btn-remove')
+          .html('–');
+
+        $formGroupClone.find('input').val('');
+        $formGroupClone.find('.concept').text('DI');
+        $formGroupClone.insertAfter($formGroup);
+
+        var $lastFormGroupLast = $multipleFormGroup.find('.form-group:last');
+        if ($multipleFormGroup.data('max') <= countFormGroup($multipleFormGroup)) {
+          $lastFormGroupLast.find('.btn-add').attr('disabled', true);
+        }
+      };
+
+      var removeFormGroup = function (event) {
+        event.preventDefault();
+
+        var $formGroup = $(this).closest('.form-group');
+        var $multipleFormGroup = $formGroup.closest('.multiple-form-group');
+
+        var $lastFormGroupLast = $multipleFormGroup.find('.form-group:last');
+        if ($multipleFormGroup.data('max') >= countFormGroup($multipleFormGroup)) {
+          $lastFormGroupLast.find('.btn-add').attr('disabled', false);
+        }
+
+        $formGroup.remove();
+      };
+
+      var selectFormGroup = function (event) {
+        event.preventDefault();
+
+        var $selectGroup = $(this).closest('.input-group-select');
+        var param = $(this).attr("href").replace("#", "");
+        var concept = $(this).text();
+
+        $selectGroup.find('.concept').text(concept);
+        $selectGroup.find('.input-group-select-val').val(param);
+
+      }
+
+      var countFormGroup = function ($form) {
+        return $form.find('.form-group').length;
+      };
+
+      $(document).on('click', '.btn-add', addFormGroup);
+      $(document).on('click', '.btn-remove', removeFormGroup);
+      $(document).on('click', '.dropdown-menu a', selectFormGroup);
+
+    });
+  })(jQuery);
+</script>
+
+
+<!-- training script -->
+<script>
+  function sendInds() {
+    indicators(function (table) {
+      $.ajax({
+        type: "POST",
+        url: '/',
+        data: {
+          table: table,
+        },
+      });
+    })
+  }
+</script>
